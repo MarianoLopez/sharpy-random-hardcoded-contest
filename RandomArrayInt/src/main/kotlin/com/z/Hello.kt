@@ -1,23 +1,33 @@
 package com.z
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.io.File
-import java.io.OutputStream
 import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
+
 fun main(args: Array<String>) {
+    when(args.size){
+        1 -> writeFile(args.first().toInt())
+        2 -> writeFile(args.first().toInt(),args[1].toInt())
+        3 -> writeFile(args.first().toInt(),args[1].toInt(),args[2])
+    }
+//    readFile()
+    //readFile2()
+}
+
+fun writeFile(top:Int,randomTop:Int=1000,path:String = ".$top"){
     val time =  measureTimeMillis {
-         val top = 100000000
-         val input = Input(mutableListOf(), 1000)
-         for (i in 1..top) {
-             input.array.add((0..1000).random())
-             if(i%100==0) println("%.4f".format(i*100.0/top)+"%")
-         }
-         jacksonObjectMapper().writeValue(File("Z:\\Documents\\randomInput.json"), input)
-     }
+        File(path).apply { createNewFile() } .bufferedWriter().use { out->
+            for (i in 1..top) {
+                out.write((0..1000).random().toString())
+                if(i!=top)out.newLine()
+                if(i%100==0) println("%.4f".format(i*100.0/top)+"%")
+            }
+        }
+
+        //jacksonObjectMapper().writeValue(File("Z:\\Documents\\randomInput10M.json"), input)
+    }
     println("Completed in $time ms")
 }
-data class Input(val array:MutableList<Int>, val sum:Int)
 fun IntRange.random() = Random.nextInt(start, endInclusive + 1)
 

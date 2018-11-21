@@ -3,7 +3,12 @@ package com.z
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonToken
 import java.io.BufferedInputStream
+import java.io.File
 import java.io.FileInputStream
+import java.nio.channels.FileChannel
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Paths
 import kotlin.system.measureTimeMillis
 
 
@@ -15,10 +20,16 @@ private var arraySize:Int = 0
 
 fun main(args: Array<String>) {
     val time = measureTimeMillis{
-        withCustomParser(args.first())
+        //readTest(args.first())
+        //withCustomParser(args.first())
+        newWay(args.first())
     }
     println("CustomParser Completed in $time ms")
 }
+private fun newWay(path: String){
+    val stream = Files.lines(Paths.get(path)).parallel().mapToInt { it.toInt() }.sorted().toArray()
+}
+
 private fun withCustomParser(path:String){
     val factory = JsonFactory()
     factory.createParser(BufferedInputStream(FileInputStream(path))).use {
@@ -49,7 +60,26 @@ private fun withCustomParser(path:String){
     println("foundPairs size: ${foundPairs.size} -> $foundPairs")
 }
 
-
+fun readTest(path:String){
+    val sb = StringBuilder()
+    val list = mutableListOf<Int>()
+    val size = 1024
+    val f = FileInputStream(path)
+    val fc = f.channel
+    val mb = fc.map( FileChannel.MapMode.READ_ONLY, 0L, fc.size( ) )
+    val barray = ByteArray(size)
+    var nGet = 0
+    var checkSum = 0L
+    while (mb.hasRemaining()) {
+        nGet = Math.min(mb.remaining(), size)
+        mb.get(barray, 0, nGet)
+        list.addAll(String(barray).replace("\n","").replace("\"","").trim() .split(",").map { it.toInt() })
+        //sb.append(String(barray, Charset.defaultCharset()))
+    }
+    //File("Z:\\Documents\\copy.js").writeText(sb.toString())
+    //println(sb.toString())
+    println("size ${list.size}")
+}
 /*private fun withoutParser(path: String){
     val (array,sum) = getInputStream(path)
     println("array size: ${array.size} - givenSum: $sum")
